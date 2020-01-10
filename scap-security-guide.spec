@@ -1,4 +1,4 @@
-%global		redhatssgversion	18
+%global		redhatssgversion	21
 
 Name:		scap-security-guide
 Version:	0.1.%{redhatssgversion}
@@ -10,7 +10,9 @@ License:	Public Domain
 URL:		https://fedorahosted.org/scap-security-guide/
 
 Source0:	http://repos.ssgproject.org/sources/%{name}-%{version}.tar.gz
-Patch1:		scap-security-guide-0.1.18-update-C2S-profile-per-request-from-CIS.patch
+Patch1:		scap-security-guide-0.1.21-dev-shm-removable.patch
+Patch2:		scap-security-guide-0.1.21-dont-include-the-test-profile.patch
+Patch3:		scap-security-guide-0.1.21-document-kickstart-in-manual-page.patch
 BuildArch:	noarch
 
 BuildRequires:	libxslt, expat, python, openscap-utils >= 0.9.1, python-lxml
@@ -29,21 +31,35 @@ guideline. Refer to scap-security-guide(8) manual page for further information.
 
 %prep
 %setup -q -n %{name}-%{version}
-%patch1 -p1 -b .C2S-update
+%patch1 -p1 -b .dev_shm_removable
+%patch2 -p1 -b .dont_include_the_test_profile
+%patch3 -p1 -b .document_kickstart_in_manual_page
 
 %build
 (cd RHEL/6 && make dist)
+(cd RHEL/7 && make dist)
 
 %install
+
 rm -rf %{buildroot}
 
-mkdir -p %{buildroot}%{_datadir}/xml/scap/ssg/content
-mkdir -p %{buildroot}%{_mandir}/en/man8/
-
 # Add in core content (SCAP)
+mkdir -p %{buildroot}%{_datadir}/xml/scap/ssg/content
 cp -a RHEL/6/dist/content/* %{buildroot}%{_datadir}/xml/scap/ssg/content/
 
+# Add in datastream form of RHEL-7 benchmark (RHEL-6 datastream benchmark
+# got included above while copying RHEL-6 native content)
+cp -a RHEL/7/dist/content/ssg-rhel7-ds.xml %{buildroot}%{_datadir}/xml/scap/ssg/content
+
+# Add in RHEL-6 library for remediations
+mkdir -p %{buildroot}%{_datadir}/%{name}
+cp -a RHEL/6/input/fixes/bash/templates/functions %{buildroot}%{_datadir}/%{name}/functions
+# Add in kickstart file for RHEL-6 USGCB profile
+mkdir -p %{buildroot}%{_datadir}/%{name}/kickstart
+cp -a RHEL/6/kickstart/usgcb-server-with-gui-ks.cfg %{buildroot}%{_datadir}/%{name}/kickstart/ssg-rhel6-usgcb-server-with-gui-ks.cfg
+
 # Add in manpage
+mkdir -p %{buildroot}%{_mandir}/en/man8/
 cp -a RHEL/6/input/auxiliary/scap-security-guide.8 %{buildroot}%{_mandir}/en/man8/scap-security-guide.8
 
 %clean
@@ -52,10 +68,31 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %{_datadir}/xml/scap
+%{_datadir}/%{name}
 %lang(en) %{_mandir}/en/man8/scap-security-guide.8.gz
 %doc RHEL/6/LICENSE RHEL/6/output/rhel6-guide.html RHEL/6/output/table-rhel6-cces.html RHEL/6/output/table-rhel6-nistrefs-common.html RHEL/6/output/table-rhel6-nistrefs.html RHEL/6/output/table-rhel6-srgmap-flat.html RHEL/6/output/table-rhel6-srgmap-flat.xhtml RHEL/6/output/table-rhel6-srgmap.html RHEL/6/output/table-rhel6-stig.html RHEL/6/input/auxiliary/DISCLAIMER
 
 %changelog
+* Tue May 12 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.21-3
+- Rebuild scap-security-guide RPM against openscap >= 1.0.9 in order the
+  upstream SCAP Security Guide logo to be rendered properly in the generated
+  HTML guide
+
+* Mon Mar 09 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.21-2
+- Re-implement nodev, noexec, and nosuid removable media OVAL checks
+  (RH BZ#1185426)
+- Don't include the 'test' profile into the SCAP content (RH BZ#1199946)
+- Document USGCB profile kickstart availability for Red Hat Enterprise Linux 6
+  in the scap-security-guide manual page (RH BZ#1133963)
+
+* Fri Feb 20 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.21-1
+- Upgrade to upstream 0.1.21 version
+- Drop C2S profile patch since it has been adopted upstream
+- Include datastream forms of benchmarks for Red Hat Enterprise Linux 6
+  and Red Hat Enterprise Linux 7
+- Include the kickstart file for United States Government Configuration
+  Baseline (USGCB) profile for Red Hat Enterprise Linux 6
+
 * Thu Aug 28 2014 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.18-3
 - Update C2S profile <description> per request from CIS
 

@@ -1,0 +1,17 @@
+--- scap-security-guide-0.1.21/RHEL/6/input/auxiliary/scap-security-guide.8.orig	2015-03-09 09:34:32.317546745 -0400
++++ scap-security-guide-0.1.21/RHEL/6/input/auxiliary/scap-security-guide.8	2015-03-09 09:37:43.860689930 -0400
+@@ -58,6 +58,14 @@ agencies on what should be done to impro
+ configuration settings focusing primarily on security.
+ 
+ .B "NOTE: "
++The following SCAP Security Guide kickstart file can be used to install a
++Red Hat Enterprise Linux 6 Server system that will be right after the
++completion of the installation compliant with the United States Government
++Configuration Baseline (USGCB):
++
++.I /usr/share/scap-security-guide/kickstart/ssg-rhel6-usgcb-server-with-gui-ks.cfg
++
++.B "NOTE: "
+ While the current content maps to USGCB requirements, it has NOT
+ been validated by NIST as of yet. This content should be considered
+ draft, we are highly interested in feedback.

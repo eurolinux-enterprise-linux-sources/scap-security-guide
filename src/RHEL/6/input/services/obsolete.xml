@@ -41,14 +41,14 @@ attacks against xinetd itself.
 </rationale>
 <ident cce="27046-2" />
 <oval id="service_xinetd_disabled" />
-<ref nist="AC-17(8),CM-7" disa="305"/>
+<ref nist="CM-7" disa="305"/>
 <tested by="DS" on="20121026"/>
 </Rule>
 
 <Rule id="uninstall_xinetd">
 <title>Uninstall xinetd Package</title>
 <description>The <tt>xinetd</tt> package can be uninstalled with the following command:
-<pre># yum erase xinetd</pre>
+<pre>$ sudo yum erase xinetd</pre>
 </description>
 <ocil>
 If network services are using the xinetd service, this is not applicable.
@@ -60,7 +60,7 @@ xinetd service's accidental (or intentional) activation.
 </rationale>
 <ident cce="27005-8" />
 <oval id="package_xinetd_removed" />
-<ref nist="AC-17(8),CM-7" disa="305"/>
+<ref nist="CM-7" disa="305"/>
 <tested by="DS" on="20121026"/>
 </Rule>
 
@@ -72,7 +72,7 @@ for information transmitted on the network. This includes authentication
 information such as passwords. Organizations which use telnet should be
 actively working to migrate to a more secure protocol.</description>
 
-<Rule id="disable_telnet_service" severity="high">
+<Rule id="service_telnetd_disabled" severity="high">
 <title>Disable telnet Service</title>
 <description>
 <service-disable-macro service="telnet" />
@@ -87,7 +87,7 @@ subject to man-in-the-middle attacks.
 </rationale>
 <ident cce="26836-7" />
 <oval id="service_telnetd_disabled" />
-<ref nist="AC-17(8),CM-7,IA-5(1)(c)" disa="68,1436,197,877,888" />
+<ref nist="CM-7,IA-5(1)(c)" disa="68,1436,197,877,888" />
 <tested by="DS" on="20121026"/>
 </Rule>
 
@@ -95,7 +95,7 @@ subject to man-in-the-middle attacks.
 <title>Uninstall telnet-server Package</title>
 <description>The <tt>telnet-server</tt> package can be uninstalled with
 the following command:
-<pre># yum erase telnet-server</pre></description>
+<pre>$ sudo yum erase telnet-server</pre></description>
 <ocil><package-check-macro package="telnet-server" /> </ocil>
 <rationale>
 Removing the <tt>telnet-server</tt> package decreases the risk of the
@@ -103,7 +103,7 @@ telnet service's accidental (or intentional) activation.
 </rationale>
 <ident cce="27073-6" />
 <oval id="package_telnet-server_removed" />
-<ref nist="AC-17(8),CM-7" disa="305,381"/>
+<ref nist="CM-7" disa="305,381"/>
 <tested by="DS" on="20121026"/>
 </Rule>
 
@@ -129,11 +129,11 @@ Enterprise Linux.</rationale>
 allow cleartext remote access and have an insecure trust
 model.</description>
 
-<Rule id="uninstall_rsh-server" severity="high">
+<Rule id="package_rsh-server_removed" severity="high">
 <title>Uninstall rsh-server Package</title>
 <description>The <tt>rsh-server</tt> package can be uninstalled with
 the following command:
-<pre># yum erase rsh-server</pre>
+<pre>$ sudo yum erase rsh-server</pre>
 </description>
 <ocil><package-check-macro package="rsh-server" /> </ocil>
 <rationale>The <tt>rsh-server</tt> package provides several obsolete and insecure
@@ -143,11 +143,11 @@ activation.
 </rationale>
 <ident cce="27062-9" />
 <oval id="package_rsh-server_removed" />
-<ref nist="AC-17(8),CM-7" disa="305,381"/>
+<ref nist="CM-7" disa="305,381"/>
 <tested by="DS" on="20121026"/>
 </Rule>
 
-<Rule id="disable_rexec" severity="high">
+<Rule id="service_rexec_disabled" severity="high">
 <title>Disable rexec Service</title>
 <description>The <tt>rexec</tt> service, which is available with
 the <tt>rsh-server</tt> package and runs as a service through xinetd,
@@ -162,11 +162,11 @@ stolen by eavesdroppers on the network.
 </rationale>
 <ident cce="27208-8" />
 <oval id="service_rexec_disabled" />
-<ref nist="AC-17(8),CM-7" disa="68,1436"/>
+<ref nist="CM-7" disa="68,1436"/>
 <tested by="DS" on="20121026"/>
 </Rule>
 
-<Rule id="disable_rsh" severity="high">
+<Rule id="service_rsh_disabled" severity="high">
 <title>Disable rsh Service</title>
 <description>The <tt>rsh</tt> service, which is available with
 the <tt>rsh-server</tt> package and runs as a service through xinetd,
@@ -181,7 +181,7 @@ stolen by eavesdroppers on the network.
 </rationale>
 <ident cce="26994-4" />
 <oval id="service_rsh_disabled" />
-<ref nist="AC-17(8),CM-7,IA-5(1)(c)" disa="68,1436" />
+<ref nist="CM-7,IA-5(1)(c)" disa="68,1436" />
 <tested by="DS" on="20121026"/>
 </Rule>
 
@@ -202,7 +202,7 @@ the clients for <tt>rsh</tt>,<tt>rcp</tt>, and <tt>rlogin</tt>.
 <tested by="JL" on="20140530"/>
 </Rule>
 
-<Rule id="disable_rlogin" severity="high">
+<Rule id="service_rlogin_disabled" severity="high">
 <title>Disable rlogin Service</title>
 <description>The <tt>rlogin</tt> service, which is available with
 the <tt>rsh-server</tt> package and runs as a service through xinetd,
@@ -217,7 +217,7 @@ stolen by eavesdroppers on the network.
 </rationale>
 <ident cce="26865-6" />
 <oval id="service_rlogin_disabled" />
-<ref nist="AC-17(8),CM-7,IA-5(1)(c)" disa="1436" />
+<ref nist="CM-7,IA-5(1)(c)" disa="1436" />
 <tested by="DS" on="20121026"/>
 </Rule>
 
@@ -228,7 +228,7 @@ each user's home directory) list remote hosts and users that are trusted by the
 local system when using the rshd daemon.
 To remove these files, run the following command to delete them from any
 location:
-<pre># rm /etc/hosts.equiv</pre>
+<pre>$ sudo rm /etc/hosts.equiv</pre>
 <pre>$ rm ~/.rhosts</pre>
 </description>
 <ocil clause="these files exist">
@@ -240,7 +240,7 @@ of an Rsh trust relationship.
 used in conjunction with the R-services, they can allow
 unauthenticated access to a system.</rationale>
 <ident cce="27270-8" />
-<ref nist="AC-17(8),CM-7" disa="1436" />
+<ref nist="CM-7" disa="1436" />
 <oval id="no_rsh_trust_files" />
 <tested by="DS" on="20121026"/>
 </Rule>
@@ -259,7 +259,7 @@ important authentication information.</description>
 <title>Uninstall ypserv Package</title>
 <description>The <tt>ypserv</tt> package can be uninstalled with
 the following command:
-<pre># yum erase ypserv</pre>
+<pre>$ sudo yum erase ypserv</pre>
 </description>
 <ocil><package-check-macro package="ypserv" /> </ocil>
 <rationale>Removing the <tt>ypserv</tt> package decreases the risk of the
@@ -267,7 +267,7 @@ accidental (or intentional) activation of NIS or NIS+ services.
 </rationale>
 <ident cce="27079-3" />
 <oval id="package_ypserv_removed" />
-<ref nist="AC-17(8),CM-7" disa="305,381"/>
+<ref nist="CM-7" disa="305,381"/>
 <tested by="DS" on="20121026"/>
 </Rule>
 
@@ -284,7 +284,7 @@ as a client in a NIS or NIS+ domain.
 </rationale>
 <ident cce="26894-6" />
 <oval id="service_ypbind_disabled" />
-<ref nist="AC-17(8),CM-7" disa="305"/>
+<ref nist="CM-7" disa="305"/>
 <tested by="DS" on="20121026"/>
 </Rule>
 
@@ -316,7 +316,7 @@ more secure protocols. A TFTP server should be run only if no more
 secure method of supporting existing equipment can be
 found.</description>
 
-<Rule id="disable_tftp" severity="medium">
+<Rule id="service_tftp_disabled" severity="medium">
 <title>Disable tftp Service</title>
 <description>The <tt>tftp</tt> service should be disabled.
 <service-disable-macro service="tftp" />
@@ -328,7 +328,7 @@ as a TFTP server, which does not provide encryption or authentication.
 </rationale>
 <ident cce="27055-3" />
 <oval id="service_tftp_disabled" />
-<ref nist="AC-17(8),CM-7" disa="1436" />
+<ref nist="CM-7" disa="1436" />
 <tested by="DS" on="20121026"/>
 </Rule>
 
@@ -346,7 +346,7 @@ accidental (or intentional) activation of tftp services.
 </rationale>
 <ident cce="26946-4" />
 <oval id="package_tftp-server_removed" />
-<ref nist="AC-17(8),CM-7" disa="305"/>
+<ref nist="CM-7" disa="305"/>
 <tested by="DS" on="20121026"/>
 </Rule>
 
@@ -380,19 +380,64 @@ reduces the risk of sharing files which should remain private.
 <ocil clause="this flag is missing">
 If TFTP is not installed, this is not applicable.  To determine if TFTP is installed, 
 run the following command:
-<pre># rpm -qa | grep tftp</pre>
+<pre>$ rpm -qa | grep tftp</pre>
 <br /><br />
 Verify <tt>tftp</tt> is configured by with the <tt>-s</tt> option by running the
 following command:
 <pre>grep "server_args" /etc/xinetd.d/tftp</pre>
 The output should indicate the <tt>server_args</tt> variable is configured with the <tt>-s</tt>
 flag, matching the example below:
-<pre> # grep "server_args" /etc/xinetd.d/tftp
+<pre> $ grep "server_args" /etc/xinetd.d/tftp
 server_args = -s /var/lib/tftpboot</pre>
 </ocil>
 <ident cce="27272-4" />
 <oval id="tftpd_uses_secure_mode" />
-<ref nist="AC-17(8),CM-7" disa="366"/>
+<ref nist="CM-7" disa="366"/>
+</Rule>
+
+</Group>
+
+<Group id="talk">
+<title>Chat/Messaging Services</title>
+<description>
+The talk software makes it possible for users to send and receive messages
+across systems through a terminal session.
+</description>
+
+<Rule id="uninstall_talk-server" severity="medium">
+<title>Uninstall talk-server Package</title>
+<description>
+<package-remove-macro package="talk-server" />
+</description>
+<ocil>
+<package-check-macro package="talk-server" />
+</ocil>
+<rationale>
+The talk software presents a security risk as it uses unencrypted protocols
+for communications. Removing the <tt>talk-server</tt> package decreases the
+risk of the accidental (or intentional) activation of talk services.
+</rationale>
+<ident cce="" />
+<oval id="package_talk-server_removed" />
+<tested by="JL" on="20140625"/>
+</Rule>
+
+<Rule id="package_talk_removed">
+<title>Uninstall talk Package</title>
+<description>The <tt>talk</tt> package contains the client program for the
+Internet talk protocol, which allows the user to chat with other users on
+different systems. Talk is a communication program which copies lines from one
+terminal to the terminal of another user.
+</description>
+<ocil><package-remove-macro package="talk"/></ocil>
+<rationale>
+The talk software presents a security risk as it uses unencrypted protocols
+for communications. Removing the <tt>talk</tt> package decreases the
+risk of the accidental (or intentional) activation of talk client program.
+</rationale>
+<ident cce="" />
+<oval id="package_talk_removed" />
+<tested by="JL" on="20140625"/>
 </Rule>
 
 </Group>
