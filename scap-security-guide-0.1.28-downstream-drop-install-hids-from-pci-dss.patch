@@ -1,0 +1,42 @@
+From bab33de7520df01c433453a3162e8b654716a87a Mon Sep 17 00:00:00 2001
+From: Jan Lieskovsky <jlieskov@redhat.com>
+Date: Thu, 4 Feb 2016 10:42:01 +0100
+Subject: [PATCH] [BugFix] [RHEL/6] [RHEL/7] Drop 'install_hids' rule from PCI
+ DSS profiles for Red Hat Enterprise Linux 6 and 7
+
+Since:
+* there isn't a default HIDS system we could recommend, and
+* therefore don't have a corresponding OVAL check implemented
+  for this requirement
+---
+ RHEL/6/input/profiles/pci-dss.xml | 1 -
+ RHEL/7/input/profiles/pci-dss.xml | 1 -
+ 2 files changed, 2 deletions(-)
+
+diff --git a/RHEL/6/input/profiles/pci-dss.xml b/RHEL/6/input/profiles/pci-dss.xml
+index 69050b3..6c3e5c7 100644
+--- a/RHEL/6/input/profiles/pci-dss.xml
++++ b/RHEL/6/input/profiles/pci-dss.xml
+@@ -57,7 +57,6 @@
+ <select idref="ntpd_specify_multiple_servers" selected="true"/>
+ <select idref="rpm_verify_permissions" selected="true"/>
+ <select idref="rpm_verify_hashes" selected="true"/>
+-<select idref="install_hids" selected="true"/>
+ <select idref="rsyslog_files_permissions" selected="true"/>
+ <select idref="rsyslog_files_ownership" selected="true"/>
+ <select idref="rsyslog_files_groupownership" selected="true"/>
+diff --git a/RHEL/7/input/profiles/pci-dss.xml b/RHEL/7/input/profiles/pci-dss.xml
+index b0ecfdb..3a4d19f 100644
+--- a/RHEL/7/input/profiles/pci-dss.xml
++++ b/RHEL/7/input/profiles/pci-dss.xml
+@@ -59,7 +59,6 @@
+ <select idref="chronyd_or_ntpd_specify_multiple_servers" selected="true"/>
+ <select idref="rpm_verify_permissions" selected="true"/>
+ <select idref="rpm_verify_hashes" selected="true"/>
+-<select idref="install_hids" selected="true"/>
+ <select idref="rsyslog_files_permissions" selected="true"/>
+ <select idref="rsyslog_files_ownership" selected="true"/>
+ <select idref="rsyslog_files_groupownership" selected="true"/>
+-- 
+2.4.3
+

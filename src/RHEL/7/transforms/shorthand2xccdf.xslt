@@ -14,6 +14,8 @@
 
 <xsl:include href="constants.xslt"/>
 
+<xsl:param name="ssg_version">unknown</xsl:param>
+
 <xsl:variable name="ovalfile">unlinked-rhel7-oval.xml</xsl:variable>
 <xsl:variable name="defaultseverity" select="'low'" />
 
@@ -34,6 +36,11 @@
     <xsl:attribute name="date">
        <xsl:value-of select="date:date()"/>
     </xsl:attribute>
+  </xsl:template>
+
+  <!-- insert SSG version -->
+  <xsl:template match="Benchmark/version">
+    <xccdf:version><xsl:value-of select="$ssg_version"/></xccdf:version>
   </xsl:template>
 
   <!-- hack for OpenSCAP validation quirk: must place reference after description/warning, but prior to others -->
@@ -158,6 +165,12 @@
           <xsl:if test="$refsource = 'disa'">
             <xsl:value-of select="$disa-cciuri" />
           </xsl:if>
+          <xsl:if test="$refsource = 'pcidss'">
+            <xsl:value-of select="$pcidssuri" />
+          </xsl:if>
+          <xsl:if test="$refsource = 'cis'">
+            <xsl:value-of select="$cisuri" />
+          </xsl:if>
         </xsl:attribute>
         <xsl:value-of select="normalize-space($refitem)" />
       </reference>
@@ -205,7 +218,9 @@
             <xsl:if test="fileperms-check-macro or fileowner-check-macro or filegroupowner-check-macro">it does not</xsl:if>
             <xsl:if test="partition-check-macro">no line is returned</xsl:if>
             <xsl:if test="service-disable-check-macro">the service is running</xsl:if>
+            <xsl:if test="socket-disable-check-macro">the socket is running</xsl:if>
             <xsl:if test="xinetd-service-disable-check-macro">the service is running</xsl:if>
+            <xsl:if test="systemd-socket-disable-check-macro">the socket is running</xsl:if>
             <xsl:if test="service-enable-check-macro">the service is not running</xsl:if>
             <xsl:if test="package-check-macro">the package is installed</xsl:if>
             <xsl:if test="module-disable-check-macro">no line is returned</xsl:if>
@@ -229,9 +244,8 @@
 
    <xsl:template match="tested">
       <reference>
-        <xsl:attribute name="href">test_attestation</xsl:attribute>
-            <dc:contributor><xsl:value-of select="@by" /></dc:contributor>
-            <dc:date><xsl:value-of select="@on" /></dc:date>
+        <xsl:attribute name="href"><xsl:value-of select="$ssg-contributors-uri" /></xsl:attribute>
+        <xsl:value-of select="concat('Test attestation on ', @on, ' by ', @by)" />
       </reference>
    </xsl:template>
 
@@ -322,17 +336,17 @@
 
   <xsl:template match="fileperms-desc-macro">
     To properly set the permissions of <xhtml:code><xsl:value-of select="@file"/></xhtml:code>, run the command:
-    <xhtml:pre xml:space="preserve">$ sudo chmod <xsl:value-of select="@perms"/> <xsl:value-of select="@file"/></xhtml:pre>
+    <xhtml:pre xml:space="preserve">$ sudo chmod <xsl:value-of select="@perms"/><xsl:text> </xsl:text><xsl:value-of select="@file"/></xhtml:pre>
   </xsl:template>
 
   <xsl:template match="fileowner-desc-macro">
     To properly set the owner of <xhtml:code><xsl:value-of select="@file"/></xhtml:code>, run the command:
-    <xhtml:pre xml:space="preserve">$ sudo chown <xsl:value-of select="@owner"/> <xsl:value-of select="@file"/> </xhtml:pre>
+    <xhtml:pre xml:space="preserve">$ sudo chown <xsl:value-of select="@owner"/><xsl:text> </xsl:text><xsl:value-of select="@file"/> </xhtml:pre>
   </xsl:template>
 
   <xsl:template match="filegroupowner-desc-macro">
     To properly set the group owner of <xhtml:code><xsl:value-of select="@file"/></xhtml:code>, run the command:
-    <xhtml:pre xml:space="preserve">$ sudo chgrp <xsl:value-of select="@group"/> <xsl:value-of select="@file"/> </xhtml:pre>
+    <xhtml:pre xml:space="preserve">$ sudo chgrp <xsl:value-of select="@group"/><xsl:text> </xsl:text><xsl:value-of select="@file"/> </xhtml:pre>
   </xsl:template>
 
   <xsl:template match="fileperms-check-macro">
@@ -384,12 +398,17 @@
 
   <xsl:template match="service-disable-macro">
     The <xhtml:code><xsl:value-of select="@service"/></xhtml:code> service can be disabled with the following command:
-    <xhtml:pre>$ sudo systemctl disable <xsl:value-of select="@service"/></xhtml:pre>
+    <xhtml:pre>$ sudo systemctl disable <xsl:value-of select="@service"/>.service</xhtml:pre>
   </xsl:template>
 
   <xsl:template match="service-enable-macro">
     The <xhtml:code><xsl:value-of select="@service"/></xhtml:code> service can be enabled with the following command:
-    <xhtml:pre>$ sudo systemctl enable <xsl:value-of select="@service"/></xhtml:pre>
+    <xhtml:pre>$ sudo systemctl enable <xsl:value-of select="@service"/>.service</xhtml:pre>
+  </xsl:template>
+
+  <xsl:template match="socket-disable-macro">
+    The <xhtml:code><xsl:value-of select="@socket"/></xhtml:code> socket can be disabled with the following command:
+    <xhtml:pre>$ sudo systemctl disable <xsl:value-of select="@socket"/>.socket</xhtml:pre>
   </xsl:template>
 
   <xsl:template match="service-disable-check-macro">
@@ -406,8 +425,22 @@
     <xhtml:pre>inactive</xhtml:pre>
   </xsl:template>
 
+  <xsl:template match="systemd-socket-disable-check-macro">
+    To check that the <xhtml:code><xsl:value-of select="@socket"/></xhtml:code> socket is disabled in system boot configuration with systemd, run the following command:
+    <xhtml:pre>$ systemctl is-enabled <xhtml:code><xsl:value-of select="@socket"/></xhtml:code></xhtml:pre>
+    Output should indicate the <xhtml:code><xsl:value-of select="@socket"/></xhtml:code> socket has either not been installed,
+    or has been disabled at all runlevels, as shown in the example below:
+    <xhtml:pre>$ systemctl is-enabled <xhtml:code><xsl:value-of select="@socket"/></xhtml:code><xhtml:br/>disabled</xhtml:pre>
+
+    Run the following command to verify <xhtml:code><xsl:value-of select="@socket"/></xhtml:code> is not active (i.e. not running) through current runtime configuration:
+    <xhtml:pre>$ systemctl is-active <xsl:value-of select="@socket"/></xhtml:pre>
+
+    If the socket is not running the command will return the following output:
+    <xhtml:pre>inactive</xhtml:pre>
+  </xsl:template>
+
   <xsl:template match="xinetd-service-disable-check-macro">
-      To check that the <xhtml:code><xsl:value-of select="@service"/></xhtml:code> service is disabled in system boot configuration, run the following command:
+      To check that the <xhtml:code><xsl:value-of select="@service"/></xhtml:code> service is disabled in system boot configuration with xinetd, run the following command:
           <xhtml:pre>$ chkconfig <xhtml:code><xsl:value-of select="@service"/></xhtml:code> --list</xhtml:pre>
               Output should indicate the <xhtml:code><xsl:value-of select="@service"/></xhtml:code> service has either not been installed, or has been disabled, as shown in the example below:
               <xhtml:pre>$ chkconfig <xhtml:code><xsl:value-of select="@service"/></xhtml:code> --list
@@ -438,7 +471,7 @@
   <xsl:template match="module-disable-macro">
 To configure the system to prevent the <xhtml:code><xsl:value-of select="@module"/></xhtml:code>
 kernel module from being loaded, add the following line to a file in the directory <xhtml:code>/etc/modprobe.d</xhtml:code>:
-<xhtml:pre xml:space="preserve">install <xsl:value-of select="@module"/> /bin/false</xhtml:pre>
+<xhtml:pre xml:space="preserve">install <xsl:value-of select="@module"/> /bin/true</xhtml:pre>
   </xsl:template>
 
   <xsl:template match="module-disable-check-macro">
@@ -446,7 +479,7 @@ If the system is configured to prevent the loading of the
 <xhtml:code><xsl:value-of select="@module"/></xhtml:code> kernel module,
 it will contain lines inside any file in <xhtml:code>/etc/modprobe.d</xhtml:code> or the deprecated<xhtml:code>/etc/modprobe.conf</xhtml:code>.
 These lines instruct the module loading system to run another program (such as
-<xhtml:code>/bin/false</xhtml:code>) upon a module <xhtml:code>install</xhtml:code> event.
+<xhtml:code>/bin/true</xhtml:code>) upon a module <xhtml:code>install</xhtml:code> event.
 Run the following command to search for such lines in all files in <xhtml:code>/etc/modprobe.d</xhtml:code>
 and the deprecated <xhtml:code>/etc/modprobe.conf</xhtml:code>:
 <xhtml:pre xml:space="preserve">$ grep -r <xsl:value-of select="@module"/> /etc/modprobe.conf /etc/modprobe.d</xhtml:pre>
@@ -460,34 +493,33 @@ system call, run the following command:
 If the system is configured to audit this activity, it will return a line.
   </xsl:template>
 
-  <!--Example usage: <iptables-desc-macro allow="true" net="false" proto="tcp" 
+  <!--Example usage: <firewalld-desc-macro allow="true" service="ssh" proto="tcp"
        port="80" />  -->
-    <!-- allow (boolean): optional attribute which defaults to true, or to 
+    <!-- allow (boolean): optional attribute which defaults to true, or to
          allow this traffic through -->
-    <!-- net (boolean): optional attribute which determines if -s netwk/mask 
-         is put in.  By defaults this is false -->
+    <!-- service (string): type of service e.g. ssh, ftp, etc. -->
     <!-- proto (string): protocol in question, typically tcp or udp -->
     <!-- port (integer): port in question -->
-  <xsl:template match="iptables-desc-macro">
+  <xsl:template match="firewalld-desc-macro">
     <xsl:choose>
-      <xsl:when test="@allow = 'false'"> 
+      <xsl:when test="@allow = 'false'">
       <!-- allow: optional attribute which defaults to true, or to allow this traffic through -->
-        To configure <xhtml:code>iptables</xhtml:code> to not allow port 
-        <xsl:value-of select="@port"/> traffic one must edit 
-        <xhtml:code>/etc/sysconfig/iptables</xhtml:code> and
-        <xhtml:code>/etc/sysconfig/ip6tables</xhtml:code> (if IPv6 is in use).
-        Remove the following line, ensuring that it does not appear in the INPUT 
-        chain:
-        <xhtml:pre xml:space="preserve">-A INPUT <xsl:if test="@net = 'true'">-s netwk/mask </xsl:if>-m state --state NEW -p <xsl:value-of select="@proto"/> --dport <xsl:value-of select="@port"/> -j ACCEPT</xhtml:pre>
+        To configure <xhtml:code>firewalld</xhtml:code> to not allow access, run the following command(s):
+        <xsl:if test="@port">
+          <xhtml:code>firewall-cmd --permanent --remove-port=<xsl:value-of select="@port"/>/<xsl:value-of select="@proto"/></xhtml:code>
+        </xsl:if>
+        <xsl:if test="@service">
+          <xhtml:code><xsl:if test="@service = 'true'">firewall-cmd --permanent --remove-service=<xsl:value-of select="@service"/></xsl:if></xhtml:code>
+        </xsl:if>
       </xsl:when>
       <xsl:otherwise>
-        To configure <xhtml:code>iptables</xhtml:code> to allow port 
-        <xsl:value-of select="@port"/> traffic one must edit 
-        <xhtml:code>/etc/sysconfig/iptables</xhtml:code>  and 
-        <xhtml:code>/etc/sysconfig/ip6tables</xhtml:code> (if IPv6 is in use).
-        Add the following line, ensuring that it appears before the final LOG 
-        and DROP lines for the INPUT chain:
-        <xhtml:pre xml:space="preserve">-A INPUT <xsl:if test="@net = 'true'">-s netwk/mask </xsl:if>-m state --state NEW -p <xsl:value-of select="@proto"/> --dport <xsl:value-of select="@port"/> -j ACCEPT</xhtml:pre>
+        To configure <xhtml:code>firewalld</xhtml:code> to allow access, run the following command(s):
+        <xsl:if test="@port">
+          <xhtml:code>firewall-cmd --permanent --add-port=<xsl:value-of select="@port"/>/<xsl:value-of select="@proto"/></xhtml:code> and
+        </xsl:if>
+        <xsl:if test="@service">
+          <xhtml:code>firewall-cmd --permanent --add-service=<xsl:value-of select="@service"/></xhtml:code>
+        </xsl:if>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>

@@ -27,33 +27,92 @@ endif
 PKG := $(PKGNAME)-$(SSG_VERSION)
 TARBALL = $(RPMBUILD)/SOURCES/$(PKG).tar.gz
 
+PREFIX=$(DESTDIR)/usr
+DATADIR=share
+MANDIR=$(DATADIR)/man
+DOCDIR=$(DATADIR)/doc
+
 # Define custom canned sequences / macros below
 
 # Define Makefile targets below
 
-all: fedora rhel6 rhel7 openstack rhevm3 rpm zipfile
+all: validate-buildsystem fedora rhel5 rhel6 rhel7 rhel-osp7 rhevm3 webmin firefox jre chromium debian8 rpm
+dist: chromium-dist firefox-dist fedora-dist jre-dist rhel6-dist rhel7-dist debian8-dist
+jenkins: clean all validate dist
 
 fedora:
 	cd Fedora/ && $(MAKE)
 
+fedora-dist:
+	cd Fedora/ && $(MAKE) dist
+
+rhel5:
+	cd RHEL/5/ && $(MAKE)
+
 rhel6:
 	cd RHEL/6/ && $(MAKE)
+
+rhel6-dist:
+	cd RHEL/6/ && $(MAKE) dist
 
 rhel7:
 	cd RHEL/7/ && $(MAKE)
 
-openstack:
-	cd OpenStack && $(MAKE)
+rhel7-dist:
+	cd RHEL/7/ && $(MAKE) dist
+
+debian8:
+	cd Debian/8/ && $(MAKE)
+
+debian8-dist:
+	cd Debian/8/ && $(MAKE) dist
+
+rhel-osp7:
+	cd OpenStack/RHEL-OSP/7 && $(MAKE)
 
 rhevm3:
 	cd RHEVM3 && $(MAKE)
 
-validate: fedora rhel6 rhel7 openstack rhevm3
+jre:
+	cd JRE/ && $(MAKE)
+
+jre-dist:
+	cd JRE/ && $(MAKE) dist
+
+firefox:
+	cd Firefox/ && $(MAKE)
+
+firefox-dist:
+	cd Firefox/ && $(MAKE) dist
+
+webmin:
+	cd Webmin/ && $(MAKE)
+
+chromium:
+	cd Chromium/ && $(MAKE)
+
+chromium-dist:
+	cd Chromium/ && $(MAKE) dist
+
+validate-buildsystem:
+	for makefile in `find -name Makefile`; do \
+		if grep '[[:space:]]\+$$' $$makefile; then \
+			echo "Trailing Whitespace in $$makefile"; \
+			exit 1; \
+		fi \
+	done
+
+validate: fedora rhel5 rhel6 rhel7 debian8 rhel-osp7 rhevm3 chromium firefox jre
 	cd Fedora/ && $(MAKE) validate
 	cd RHEL/6/ && $(MAKE) validate
+	#cd Debian/8/ && $(MAKE) validate
+	cd Chromium/ && $(MAKE) validate
+	cd Firefox/ && $(MAKE) validate
+	cd JRE/ && $(MAKE) validate
+	cd OpenStack/RHEL-OSP/7/ && $(MAKE) validate
 	# Enable below when content validates correctly
+	#cd RHEL/5/ && $(MAKE) validate
 	#cd RHEL/7/ && $(MAKE) validate
-	#cd OpenStack && $(MAKE) validate
 	#cd RHEVM3 && $(MAKE) validate
 
 rpmroot:
@@ -69,41 +128,52 @@ tarball: rpmroot
 	# Copy in the source trees for both RHEL
 	# and JBossEAP5 content
 	mkdir -p $(RPMBUILD)/$(PKG)
-	cp {BUILD.md,Contributors.md,LICENSE,README.md} $(RPMBUILD)/$(PKG)
+	cp BUILD.md Contributors.md LICENSE VERSION README.md  $(RPMBUILD)/$(PKG)/
 	cp -r config/ $(RPMBUILD)/$(PKG)
+	cp -r docs/ $(RPMBUILD)/$(PKG)
 	cp -r shared/ $(RPMBUILD)/$(PKG)
+	cp -r --preserve=links --parents RHEL/5/ $(RPMBUILD)/$(PKG)
 	cp -r --preserve=links --parents RHEL/6/ $(RPMBUILD)/$(PKG)
 	cp -r --preserve=links --parents RHEL/7/ $(RPMBUILD)/$(PKG)
+	cp -r --preserve=links --parents Debian/8/ $(RPMBUILD)/$(PKG)
 	cp -r --preserve=links --parents Fedora/ $(RPMBUILD)/$(PKG)
+	cp -r --preserve=links --parents JRE/ $(RPMBUILD)/$(PKG)
+	cp -r --preserve=links --parents Firefox/ $(RPMBUILD)/$(PKG)
+	cp -r --preserve=links --parents Webmin/ $(RPMBUILD)/$(PKG)
+	cp -r --preserve=links --parents Chromium $(RPMBUILD)/$(PKG)
 	cp -r JBossEAP5 $(RPMBUILD)/$(PKG)
 
 	# Don't trust the developers, clean out the build
 	# environment before packaging
+	(cd $(RPMBUILD)/$(PKG)/RHEL/5/ && $(MAKE) clean)
 	(cd $(RPMBUILD)/$(PKG)/RHEL/6/ && $(MAKE) clean)
 	(cd $(RPMBUILD)/$(PKG)/RHEL/7/ && $(MAKE) clean)
+	(cd $(RPMBUILD)/$(PKG)/Debian/8/ && $(MAKE) clean)
 	(cd $(RPMBUILD)/$(PKG)/Fedora/ && $(MAKE) clean)
+	(cd $(RPMBUILD)/$(PKG)/Chromium/ && $(MAKE) clean)
+	(cd $(RPMBUILD)/$(PKG)/JRE/ && $(MAKE) clean)
+	(cd $(RPMBUILD)/$(PKG)/Firefox/ && $(MAKE) clean)
+	(cd $(RPMBUILD)/$(PKG)/Webmin/ && $(MAKE) clean)
 
 	# Create the source tar, copy it to TARBALL
 	# (e.g. somewhere in the SOURCES directory)
 	cd $(RPMBUILD) && tar -czf $(PKG).tar.gz $(PKG)
 	cp $(RPMBUILD)/$(PKG).tar.gz $(TARBALL)
 
-zipfile: rhel6 rpmroot
-	# Create a zipfile release, since many SCAP
-	# tools desire content in that format
-	# (Note: By default zip will store the full path
-	#	 relative to the current directory, need
-	#	 to cd into $(RPMBUILD)
-	cp RHEL/6/output/ssg-* $(RPMBUILD)/ZIPS/
-	cp JBossEAP5/eap5-* $(RPMBUILD)/ZIPS/
-	# Originally attempted to `cd $(RPMBUILD)/ZIPS` and
-	# make the zip from there, however it still placed it
-	# at working directory. Should look into this sometime
-	#
-	#cd $(RPMBUILD)/ZIPS
-	#zip -r $(PKG).zip . * -j
-	zip -r $(PKG).zip $(RPMBUILD)/ZIPS/* -j
-	mv $(PKG).zip $(RPMBUILD)/ZIPS/
+zipfile: dist
+	# ZIP only contains source datastreams and kickstarts, people who
+	# want sources to build from should get the tarball instead.
+	rm -rf $(PKG)
+	mkdir $(PKG)
+	cp README.md $(PKG)/
+	cp Contributors.md $(PKG)/
+	cp LICENSE $(PKG)/
+	cp */dist/content/*-ds.xml $(PKG)/
+	cp */*/dist/content/*-ds.xml $(PKG)/
+	mkdir $(PKG)/kickstart
+	cp RHEL/{6,7}/kickstart/*-ks.cfg $(PKG)/kickstart/
+	zip -r $(PKG).zip $(PKG)/
+	rm -r $(PKG)/
 
 version-update:
 	@echo -e "\nUpdating $(RPM_SPEC) version, release, and changelog..."
@@ -150,11 +220,45 @@ git-tag:
 	git tag -a -m "Version $(NEW_RELEASE)" v$(NEW_RELEASE)
 clean:
 	rm -rf $(RPMBUILD)
+	cd RHEL/5 && $(MAKE) clean
 	cd RHEL/6 && $(MAKE) clean
 	cd RHEL/7 && $(MAKE) clean
-	cd OpenStack && $(MAKE) clean
+	cd Debian/8 && $(MAKE) clean
+	cd OpenStack/RHEL-OSP/7 && $(MAKE) clean
 	cd RHEVM3 && $(MAKE) clean
 	cd Fedora && $(MAKE) clean
+	cd JRE && $(MAKE) clean
+	cd Firefox && $(MAKE) clean
+	cd Webmin && $(MAKE) clean
+	cd Chromium && $(MAKE) clean
 	rm -f scap-security-guide.spec
 
-.PHONY: rhel6 tarball srpm rpm clean all
+install: dist
+	install -d $(PREFIX)/$(DATADIR)/xml/scap/ssg/content/
+	install -d $(PREFIX)/$(DATADIR)/scap-security-guide
+	install -d $(PREFIX)/$(DATADIR)/scap-security-guide/kickstart
+	install -d $(PREFIX)/$(MANDIR)/en/man8/
+	install -d $(PREFIX)/$(DOCDIR)/scap-security-guide/guides
+	install -m 0644 Fedora/dist/content/* $(PREFIX)/$(DATADIR)/xml/scap/ssg/content/
+	install -m 0644 Fedora/dist/guide/* $(PREFIX)/$(DOCDIR)/scap-security-guide/guides
+	install -m 0644 RHEL/6/dist/content/* $(PREFIX)/$(DATADIR)/xml/scap/ssg/content/
+	install -m 0644 shared/remediations/bash/templates/remediation_functions $(PREFIX)/$(DATADIR)/scap-security-guide/
+	install -m 0644 RHEL/6/kickstart/*-ks.cfg $(PREFIX)/$(DATADIR)/scap-security-guide/kickstart
+	install -m 0644 RHEL/7/kickstart/*-ks.cfg $(PREFIX)/$(DATADIR)/scap-security-guide/kickstart
+	install -m 0644 RHEL/6/dist/guide/* $(PREFIX)/$(DOCDIR)/scap-security-guide/guides
+	install -m 0644 RHEL/7/dist/content/* $(PREFIX)/$(DATADIR)/xml/scap/ssg/content/
+	install -m 0644 RHEL/7/dist/guide/* $(PREFIX)/$(DOCDIR)/scap-security-guide/guides
+	install -m 0644 Chromium/dist/content/* $(PREFIX)/$(DATADIR)/xml/scap/ssg/content/
+	install -m 0644 Chromium/dist/guide/* $(PREFIX)/$(DOCDIR)/scap-security-guide/guides
+	install -m 0644 Firefox/dist/content/* $(PREFIX)/$(DATADIR)/xml/scap/ssg/content/
+	install -m 0644 Firefox/dist/guide/* $(PREFIX)/$(DOCDIR)/scap-security-guide/guides
+	install -m 0644 JRE/dist/content/* $(PREFIX)/$(DATADIR)/xml/scap/ssg/content/
+	install -m 0644 JRE/dist/guide/* $(PREFIX)/$(DOCDIR)/scap-security-guide/guides
+	install -m 0644 Debian/8/dist/content/* $(PREFIX)/$(DATADIR)/xml/scap/ssg/content/
+	install -m 0644 Debian/8/dist/guide/* $(PREFIX)/$(DOCDIR)/scap-security-guide/guides
+	install -m 0644 docs/scap-security-guide.8 $(PREFIX)/$(MANDIR)/en/man8/
+	install -m 0644 LICENSE $(PREFIX)/$(DOCDIR)/scap-security-guide
+	install -m 0644 README.md $(PREFIX)/$(DOCDIR)/scap-security-guide
+
+.PHONY: rhel5 rhel6 rhel7 debian8 jre firefox webmin tarball srpm rpm clean all
+	rm -f scap-security-guide.spec

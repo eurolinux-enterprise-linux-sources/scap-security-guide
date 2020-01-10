@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 #
 # create_services_disabled.py
@@ -18,8 +18,14 @@ import re
 
 
 def output_checkfile(serviceinfo):
-    # get the items out of the list
-    servicename, packagename = serviceinfo
+    try:
+        # get the items out of the list
+        servicename, packagename, daemonname = serviceinfo
+    except ValueError as e:
+        print "\tEntry: %s\n" % serviceinfo
+        print "\tError unpacking servicename, packagename, and daemonname: ", str(e)
+        sys.exit(1)
+
     with open("./template_service_disabled", 'r') as templatefile:
         filestring = templatefile.read()
         filestring = filestring.replace("SERVICENAME", servicename)
@@ -30,6 +36,10 @@ def output_checkfile(serviceinfo):
                                 "", filestring)
             filestring = re.sub("\s*</criteria>\n\s*</criteria>",
                                 "\n    </criteria>", filestring)
+        if not daemonname:
+            daemonname = servicename
+        filestring = filestring.replace("DAEMONNAME", daemonname)
+
         with open("./output/service_" + servicename +
                   "_disabled.xml", 'w+') as outputfile:
             outputfile.write(filestring)
@@ -45,6 +55,11 @@ def main():
         # put the CSV line's items into a list
         servicelines = csv.reader(csv_file)
         for line in servicelines:
+
+            # Skip lines of input file starting with comment '#' character
+            if line[0].startswith('#'):
+                continue
+
             output_checkfile(line)
 
     sys.exit(0)

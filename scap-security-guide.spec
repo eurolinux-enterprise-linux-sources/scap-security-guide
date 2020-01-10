@@ -1,22 +1,26 @@
-%global		redhatssgversion	21
+%global		redhatssgversion	28
 
 Name:		scap-security-guide
 Version:	0.1.%{redhatssgversion}
-Release:	3%{?dist}
+Release:	2%{?dist}
 Summary:	Security guidance and baselines in SCAP formats
 
 Group:		System Environment/Base
 License:	Public Domain
-URL:		https://fedorahosted.org/scap-security-guide/
+URL:		https://github.com/OpenSCAP/scap-security-guide
 
-Source0:	http://repos.ssgproject.org/sources/%{name}-%{version}.tar.gz
-Patch1:		scap-security-guide-0.1.21-dev-shm-removable.patch
-Patch2:		scap-security-guide-0.1.21-dont-include-the-test-profile.patch
-Patch3:		scap-security-guide-0.1.21-document-kickstart-in-manual-page.patch
+Source0:	%{name}-%{version}.tar.gz
+Patch1:		scap-security-guide-0.1.27-document-kickstarts-in-manual-page.patch
+Patch2:		scap-security-guide-0.1.27-downstream-use-internal-SSG-rpm-package-in-rhel6-kickstarts.patch
+Patch3:		scap-security-guide-0.1.28-downstream-fix-multiple-issues-in-rhel6-smartcard-auth-remediation.patch
+Patch4:		scap-security-guide-0.1.28-downstream-rhel6-audit-rules-privileged-commands-remediation.patch
+Patch5:		scap-security-guide-0.1.28-backport-update-pci-dss-url.patch
+Patch6:		scap-security-guide-0.1.28-rhel6-update-title-of-cnss-profile.patch
+Patch7:		scap-security-guide-0.1.28-downstream-drop-install-hids-from-pci-dss.patch
 BuildArch:	noarch
 
-BuildRequires:	libxslt, expat, python, openscap-utils >= 0.9.1, python-lxml
-Requires:	xml-common, openscap-utils >= 0.9.1
+BuildRequires:	libxslt, expat, python, openscap-scanner >= 1.0.10-2, python-lxml
+Requires:	xml-common, openscap-scanner >= 1.0.10-2
 
 %description
 The scap-security-guide project provides a guide for configuration of the
@@ -26,41 +30,70 @@ constitutes a catalog of practical hardening advice, linked to government
 requirements where applicable. The project bridges the gap between generalized
 policy requirements and specific implementation guidelines. The Red Hat
 Enterprise Linux 6 system administrator can use the oscap command-line tool
-from the openscap-utils package to verify that the system conforms to provided
+from the openscap-scanner package to verify that the system conforms to provided
 guideline. Refer to scap-security-guide(8) manual page for further information.
+
+%package        doc
+Summary:        HTML formatted documents containing security guides generated from XCCDF benchmarks.
+Group:          System Environment/Base
+Requires:       %{name} = %{version}-%{release}
+
+%description    doc
+The %{name}-doc package contains HTML formatted documents containing security guides that have
+been generated from XCCDF benchmarks present in %{name} package.
 
 %prep
 %setup -q -n %{name}-%{version}
-%patch1 -p1 -b .dev_shm_removable
-%patch2 -p1 -b .dont_include_the_test_profile
-%patch3 -p1 -b .document_kickstart_in_manual_page
+# Downstream patches
+%patch1 -p1 -b .document_kickstarts_in_manual_page
+%patch2 -p1 -b .use_internal_ssg_rpm_in_kickstarts
+%patch3 -p1 -b .rhel6_smartcard_auth_fix
+%patch4 -p1 -b .rhel6_audit_rules_priv_commands_fix
+%patch5 -p5 -b .update_pci_dss_url
+%patch6 -p1 -b .rhel6_update_cnss_profile_title
+%patch7 -p1 -b .drop_install_hids_rule_from_pci_dss
 
 %build
 (cd RHEL/6 && make dist)
 (cd RHEL/7 && make dist)
+(cd Firefox && make dist)
+(cd JRE && make dist)
 
 %install
 
 rm -rf %{buildroot}
 
-# Add in core content (SCAP)
 mkdir -p %{buildroot}%{_datadir}/xml/scap/ssg/content
-cp -a RHEL/6/dist/content/* %{buildroot}%{_datadir}/xml/scap/ssg/content/
+mkdir -p %{buildroot}%{_mandir}/en/man8/
 
-# Add in datastream form of RHEL-7 benchmark (RHEL-6 datastream benchmark
-# got included above while copying RHEL-6 native content)
+# Add in RHEL-6 core content (SCAP)
+cp -a RHEL/6/dist/content/ssg-rhel6-cpe-dictionary.xml %{buildroot}%{_datadir}/xml/scap/ssg/content/
+cp -a RHEL/6/dist/content/ssg-rhel6-cpe-oval.xml %{buildroot}%{_datadir}/xml/scap/ssg/content/
+cp -a RHEL/6/dist/content/ssg-rhel6-ds.xml %{buildroot}%{_datadir}/xml/scap/ssg/content/
+cp -a RHEL/6/dist/content/ssg-rhel6-oval.xml %{buildroot}%{_datadir}/xml/scap/ssg/content/
+cp -a RHEL/6/dist/content/ssg-rhel6-xccdf.xml %{buildroot}%{_datadir}/xml/scap/ssg/content/
+
+# Add in RHEL-7 datastream (SCAP)
 cp -a RHEL/7/dist/content/ssg-rhel7-ds.xml %{buildroot}%{_datadir}/xml/scap/ssg/content
 
-# Add in RHEL-6 library for remediations
+# Add in Firefox datastream (SCAP)
+cp -a Firefox/dist/content/ssg-firefox-ds.xml %{buildroot}%{_datadir}/xml/scap/ssg/content
+
+# Add in Java Runtime Environment (JRE) datastream (SCAP)
+cp -a JRE/dist/content/ssg-jre-ds.xml %{buildroot}%{_datadir}/xml/scap/ssg/content
+
+# Add in library for remediations
 mkdir -p %{buildroot}%{_datadir}/%{name}
-cp -a RHEL/6/input/fixes/bash/templates/functions %{buildroot}%{_datadir}/%{name}/functions
-# Add in kickstart file for RHEL-6 USGCB profile
+cp -a shared/remediations/bash/templates/remediation_functions %{buildroot}%{_datadir}/%{name}/remediation_functions
+
+# Add in RHEL-6 kickstart files
 mkdir -p %{buildroot}%{_datadir}/%{name}/kickstart
-cp -a RHEL/6/kickstart/usgcb-server-with-gui-ks.cfg %{buildroot}%{_datadir}/%{name}/kickstart/ssg-rhel6-usgcb-server-with-gui-ks.cfg
+cp -a RHEL/6/kickstart/ssg-rhel6-usgcb-server-with-gui-ks.cfg %{buildroot}%{_datadir}/%{name}/kickstart/ssg-rhel6-usgcb-server-with-gui-ks.cfg
+cp -a RHEL/6/kickstart/ssg-rhel6-stig-ks.cfg %{buildroot}%{_datadir}/%{name}/kickstart/ssg-rhel6-stig-ks.cfg
+cp -a RHEL/6/kickstart/ssg-rhel6-pci-dss-with-gui-ks.cfg %{buildroot}%{_datadir}/%{name}/kickstart/ssg-rhel6-pci-dss-with-gui-ks.cfg 
 
 # Add in manpage
-mkdir -p %{buildroot}%{_mandir}/en/man8/
-cp -a RHEL/6/input/auxiliary/scap-security-guide.8 %{buildroot}%{_mandir}/en/man8/scap-security-guide.8
+cp -a docs/scap-security-guide.8 %{buildroot}%{_mandir}/en/man8/scap-security-guide.8
 
 %clean
 rm -rf %{buildroot}
@@ -70,9 +103,57 @@ rm -rf %{buildroot}
 %{_datadir}/xml/scap
 %{_datadir}/%{name}
 %lang(en) %{_mandir}/en/man8/scap-security-guide.8.gz
-%doc RHEL/6/LICENSE RHEL/6/output/rhel6-guide.html RHEL/6/output/table-rhel6-cces.html RHEL/6/output/table-rhel6-nistrefs-common.html RHEL/6/output/table-rhel6-nistrefs.html RHEL/6/output/table-rhel6-srgmap-flat.html RHEL/6/output/table-rhel6-srgmap-flat.xhtml RHEL/6/output/table-rhel6-srgmap.html RHEL/6/output/table-rhel6-stig.html RHEL/6/input/auxiliary/DISCLAIMER
+%doc LICENSE RHEL/6/output/table-rhel6-cces.html RHEL/6/output/table-rhel6-nistrefs-common.html RHEL/6/output/table-rhel6-nistrefs.html RHEL/6/output/table-rhel6-srgmap-flat.html RHEL/6/output/table-rhel6-srgmap-flat.xhtml RHEL/6/output/table-rhel6-srgmap.html RHEL/6/output/table-rhel6-stig.html RHEL/6/input/auxiliary/DISCLAIMER
+
+%files doc
+%defattr(-,root,root,-)
+%doc RHEL/6/output/ssg-rhel6-guide-*.html RHEL/7/output/ssg-rhel7-guide-*.html JRE/output/ssg-jre-guide-*.html Firefox/output/ssg-firefox-guide-*.html
 
 %changelog
+* Thu Feb 04 2016 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.28-2
+- Update URL to PCI DSS standard (latest version is v3.1 from April 2015)
+- Enhance title of CNSS No.1253 profile for Red Hat Enterprise Linux 6
+  (RH BZ#1284045#c8)
+- Drop 'install_hids' rule from PCI DSS profile for both Red Hat Enterprise
+  Linux 6 and 7 (since we don't have an OVAL check for this requirement)
+
+* Tue Jan 19 2016 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.28-1
+- Rebase to upstream 0.1.28 version
+- Start using consistent IDs for OVAL definitions (RH BZ#1250808)
+
+* Tue Dec 15 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.27-2
+- Modify the upstream provided kickstart files for Red Hat Enterprise Linux 6
+  to use internal scap-security-guide RPM package rather than upstream git
+  repository copies (RH BZ#1251929)
+
+* Tue Dec 15 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.27-1
+- Rebase to upstream 0.1.27 version (RH BZ#1267509, RH BZ#1284045,
+  RH BZ#1270329, RH BZ#1250895, RH BZ#1270710, RH BZ#1223865)
+- Perform the spec changes necessary for the rebase:
+  * Update path to remediation functions library, list of provided
+  kickstart files, path to scap-security-guide(8) manual page, path
+  to LICENSE file
+  * Drop:
+  - scap-security-guide-0.1.21-dev-shm-removable.patch
+  - scap-security-guide-0.1.21-dont-include-the-test-profile.patch
+  patches since they have been merged upstream
+  * Replace:
+  - scap-security-guide-0.1.21-document-kickstart-in-manual-page.patch
+  with its updated:
+  - scap-security-guide-0.1.27-document-kickstarts-in-manual-page.patch
+  version to also document inclusion of new kickstart files for Red Hat
+  Enterprise Linux 6 that are available in upstream's 0.1.27 release
+  * Introduce the new scap-security-guide-doc subpackage (to contain the
+  HTML formatted documents containing security guides that have been
+  generated from XCCDF benchmarks present in the scap-security-guide package)
+  * Include the datastream versions of Firefox and Java Runtime Environment
+  (JRE) benchmarks
+
+* Tue Dec 15 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.21-4
+- Update R / BR to lightweight openscap-scanner >= 1.0.10-2 package
+  (RH BZ#1243396)
+- Update URL to point to official SCAP Security Guide GitHub repository
+
 * Tue May 12 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.21-3
 - Rebuild scap-security-guide RPM against openscap >= 1.0.9 in order the
   upstream SCAP Security Guide logo to be rendered properly in the generated

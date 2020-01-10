@@ -1,0 +1,27 @@
+From 7bdd237fe1c06fd9ed8e4816650a28e148c00474 Mon Sep 17 00:00:00 2001
+From: Jan Lieskovsky <jlieskov@redhat.com>
+Date: Thu, 4 Feb 2016 10:11:13 +0100
+Subject: [PATCH 5/5] [Enhancement] [RHEL/6] Per request in:  
+ https://bugzilla.redhat.com/show_bug.cgi?id=1284045#c8  
+ https://bugzilla.redhat.com/show_bug.cgi?id=1284045#c9
+
+update the title of the RHEL/6 CNSS profile it to be more descriptive
+(more aligned with the way we title other profiles)
+---
+ RHEL/6/input/profiles/nist-CL-IL-AL.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/RHEL/6/input/profiles/nist-CL-IL-AL.xml b/RHEL/6/input/profiles/nist-CL-IL-AL.xml
+index f7a25e9..1854d99 100644
+--- a/RHEL/6/input/profiles/nist-CL-IL-AL.xml
++++ b/RHEL/6/input/profiles/nist-CL-IL-AL.xml
+@@ -1,5 +1,5 @@
+ <Profile id="nist-cl-il-al" extends="common">
+-<title override="true">CNSSI 1253 Low/Low/Low</title>
++<title override="true">CNSSI 1253 Low/Low/Low Control Baseline for Red Hat Enterprise Linux 6</title>
+ <description override="true">This profile follows the Committee on National Security Systems Instruction
+ (CNSSI) No. 1253, "Security Categorization and Control Selection for National Security
+ Systems" on security controls to meet low confidentiality, low integrity, and low
+-- 
+2.4.3
+

@@ -4,6 +4,9 @@
   <xsl:template match="Benchmark">
     <xsl:copy>
       <xsl:copy-of select="@*|node()" />
+
+       <xsl:apply-templates select="document('profiles/stig-rhevm3.xml')" />
+
        <Value id="conditional_clause" type="string" operator="equals">
                  <title>A conditional clause for check statements.</title>
                  <description>A conditional clause for check statements.</description>
@@ -11,7 +14,7 @@
        </Value>
 
       <xsl:apply-templates select="document('intro/intro.xml')" />
-      <xsl:apply-templates select="document('services/sample.xml')" />
+      <xsl:apply-templates select="document('xccdf/services/sample.xml')" />
       <!-- the auxiliary Groups here will be removed prior to some outputs -->
       <xsl:apply-templates select="document('auxiliary/srg_support.xml')" />
     </xsl:copy>
@@ -20,7 +23,7 @@
   <xsl:template match="Group[@id='services']">
     <xsl:copy>
       <xsl:copy-of select="@*|node()" />
-      <xsl:apply-templates select="document('services/sample.xml')" />
+      <xsl:apply-templates select="document('xccdf/services/sample.xml')" />
     </xsl:copy>
   </xsl:template>
 

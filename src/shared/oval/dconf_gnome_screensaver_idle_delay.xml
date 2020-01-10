@@ -1,10 +1,10 @@
 <def-group>
-  <definition class="compliance" id="dconf_gnome_screensaver_idle_delay" version="1">
+  <definition class="compliance" id="dconf_gnome_screensaver_idle_delay" version="2">
     <metadata>
       <title>Configure the GNOME3 GUI Screen locking</title>
       <affected family="unix">
         <platform>Red Hat Enterprise Linux 7</platform>
-        <platform>Fedora 20</platform>
+        <platform>multi_platform_fedora</platform>
       </affected>
       <description>The allowed period of inactivity before the screensaver is activated.</description>
       <reference source="galford" ref_id="20140824" ref_url="test_attestation" />
@@ -29,7 +29,10 @@
   version="1">
     <ind:path>/etc/dconf/db/local.d/</ind:path>
     <ind:filename operation="pattern match">^.*$</ind:filename>
-    <ind:pattern operation="pattern match">^\[org/gnome/desktop/session]([^\n]*\n+)+?idle-delay=[0-9]*$</ind:pattern>
+    <!-- GSettings expects unsigned integer when setting 'idle-delay' per:
+         https://bugzilla.redhat.com/show_bug.cgi?id=1141779#c3
+         Thus require the proper datatype to be specified in 'idle-delay' configuration too -->
+    <ind:pattern operation="pattern match">^\[org/gnome/desktop/session]([^\n]*\n+)+?idle-delay=uint32[\s][0-9]*$</ind:pattern>
     <ind:instance datatype="int">1</ind:instance>
   </ind:textfilecontent54_object>
 
@@ -56,7 +59,10 @@
   version="1"> 
     <ind:path>/etc/dconf/db/local.d/</ind:path>
     <ind:filename operation="pattern match">^.*$</ind:filename>
-    <ind:pattern operation="pattern match">^idle-delay[\s=]*([^=\s]*)</ind:pattern>
+    <!-- GSettings expects unsigned integer when setting 'idle-delay' per:
+         https://bugzilla.redhat.com/show_bug.cgi?id=1141779#c3
+         Thus require the proper datatype to be specified in 'idle-delay' configuration too -->
+    <ind:pattern operation="pattern match">^idle-delay[\s=]*uint32[\s]([^=\s]*)</ind:pattern>
     <ind:instance datatype="int">1</ind:instance>
   </ind:textfilecontent54_object>
 

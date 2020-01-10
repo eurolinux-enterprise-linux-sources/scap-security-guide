@@ -1,6 +1,6 @@
 <Profile id="nist-cl-il-al" extends="common">
-<title>CNSSI 1253 Low/Low/Low</title>
-<description>This profile follows the Committee on National Security Systems Instruction
+<title override="true">CNSSI 1253 Low/Low/Low</title>
+<description override="true">This profile follows the Committee on National Security Systems Instruction
 (CNSSI) No. 1253, "Security Categorization and Control Selection for National Security
 Systems" on security controls to meet low confidentiality, low integrity, and low
 assurance."</description>
@@ -30,7 +30,7 @@ assurance."</description>
 <!--	AC-4:	TBD 
 
 	-->
-<refine-value idref="sysctl_net_ipv4_conf_all_secure_redirects_value" selector="1" />
+<refine-value idref="sysctl_net_ipv4_conf_all_secure_redirects_value" selector="enabled" />
 
 
 <!--	AC-6: Least privilege
@@ -81,17 +81,17 @@ assurance."</description>
 		- 5	(minutes)
 		- 10	(minutes)
 		- 15	(minutes) -->
-<refine-value idref="inactivity_timeout_value" selector="15" />
+<refine-value idref="inactivity_timeout_value" selector="15_minutes" />
 
 
 <!-- STATIC VARIABLES: DO NOT ALTER -->
 <refine-value idref="login_banner_text" selector="usgcb_default" />
-<refine-value idref="sysctl_net_ipv4_conf_all_accept_source_route_value" selector="0" />
-<refine-value idref="sysctl_net_ipv4_conf_all_accept_redirects_value" selector="0" />
-<refine-value idref="sysctl_net_ipv4_conf_all_log_martians_value" selector="1" />
-<refine-value idref="sysctl_net_ipv4_conf_default_secure_redirects_value" selector="1" />
-<refine-value idref="sysctl_net_ipv4_icmp_echo_ignore_broadcasts_value" selector="1" />
-<refine-value idref="sysctl_net_ipv4_icmp_ignore_bogus_error_responses_value" selector="1" />
+<refine-value idref="sysctl_net_ipv4_conf_all_accept_source_route_value" selector="disabled" />
+<refine-value idref="sysctl_net_ipv4_conf_all_accept_redirects_value" selector="disabled" />
+<refine-value idref="sysctl_net_ipv4_conf_all_log_martians_value" selector="enabled" />
+<refine-value idref="sysctl_net_ipv4_conf_default_secure_redirects_value" selector="enabled" />
+<refine-value idref="sysctl_net_ipv4_icmp_echo_ignore_broadcasts_value" selector="enabled" />
+<refine-value idref="sysctl_net_ipv4_icmp_ignore_bogus_error_responses_value" selector="enabled" />
 
 
 <!-- MAYBE
@@ -131,7 +131,7 @@ assurance."</description>
 <select idref="service_oddjobd_disabled" selected="true" />
 <select idref="rpm_verify_permissions" selected="true" />
 <select idref="file_permissions_var_log_audit" selected="true" />
-<select idref="audit_logs_rootowner" selected="true" />
+<select idref="file_ownership_var_log_audit" selected="true" />
 <select idref="userowner_shadow_file" selected="true" />
 <select idref="groupowner_shadow_file" selected="true" />
 <select idref="file_permissions_etc_shadow" selected="true" />
@@ -149,15 +149,15 @@ assurance."</description>
 <select idref="file_ownership_library_dirs" selected="true" />
 <select idref="file_permissions_binary_dirs" selected="true" />
 <select idref="file_ownership_binary_dirs" selected="true" />
-<select idref="sticky_world_writable_dirs" selected="true" />
-<select idref="world_writeable_files" selected="true" />
+<select idref="dir_perms_world_writable_sticky_bits" selected="true" />
+<select idref="file_permissions_unauthorized_world_writable" selected="true" />
 <select idref="no_files_unowned_by_user" selected="true" />
-<select idref="no_files_unowned_by_group" selected="true" />
-<select idref="world_writable_files_system_ownership" selected="true" />
+<select idref="file_permissions_ungroupowned" selected="true" />
+<select idref="dir_perms_world_writable_system_owned" selected="true" />
 <select idref="umask_for_daemons" selected="true" />
 <select idref="accounts_no_uid_except_zero" selected="true" />
-<select idref="userowner_rsyslog_files" selected="true" />
-<select idref="groupowner_rsyslog_files" selected="true" />
+<select idref="rsyslog_files_ownership" selected="true" />
+<select idref="rsyslog_files_groupownership" selected="true" />
 
 <!-- AC-6(2) -->
 <select idref="securetty_root_login_console_only" selected="true" />
@@ -166,13 +166,13 @@ assurance."</description>
 
 <!-- AC-7(a) -->
 <select idref="accounts_passwords_pam_faillock_deny" selected="true" />
-<select idref="accounts_passwords_pam_fail_interval" selected="true" />
+<select idref="accounts_passwords_pam_faillock_interval" selected="true" />
 
 <!-- AC-7(b) -->
 <select idref="accounts_passwords_pam_faillock_unlock_time" selected="true" />
 
 <!-- AC-8(a), AC-8(c) -->
-<select idref="set_system_login_banner" selected="true" />
+<select idref="banner_etc_issue" selected="true" />
 <select idref="gconf_gdm_enable_warning_gui_banner" selected="true" />
 <select idref="gconf_gdm_set_login_banner_text" selected="true" />
 
@@ -194,7 +194,7 @@ assurance."</description>
 <select idref="audit_rules_time_stime" selected="true" />
 <select idref="audit_rules_time_clock_settime" selected="true" />
 <select idref="audit_rules_time_watch_localtime" selected="true" />
-<select idref="audit_rules_usergroup_modification" selected="true" />
+<!-- audit_rules_usergroup_modification is already selected -->
 <select idref="audit_rules_networkconfig_modification" selected="true" />
 <select idref="audit_rules_mac_modification" selected="true" />
 <select idref="audit_rules_dac_modification_chmod" selected="true" />
@@ -211,7 +211,7 @@ assurance."</description>
 <select idref="audit_rules_dac_modification_removexattr" selected="true" />
 <select idref="audit_rules_dac_modification_setxattr" selected="true" />
 <select idref="audit_rules_login_events" selected="true" />
-<select idref="audit_manual_session_edits" selected="true" />
+<select idref="audit_rules_session_events" selected="true" />
 <select idref="audit_rules_unsuccessful_file_modification" selected="true" />
 <select idref="audit_rules_privileged_commands" selected="true" />
 <select idref="audit_rules_media_export" selected="true" />
@@ -221,17 +221,17 @@ assurance."</description>
 <select idref="sysctl_net_ipv4_conf_all_log_martians" selected="true" />
 
 <!-- AC-17(8) -->
-<select idref="disable_xinetd" selected="true" />
-<select idref="uninstall_xinetd" selected="true" />
+<select idref="service_xinetd_disabled" selected="true" />
+<select idref="package_xinetd_removed" selected="true" />
 <select idref="service_telnetd_disabled" selected="true" />
-<select idref="uninstall_telnet_server" selected="true" />
+<select idref="package_telnet-server_removed" selected="true" />
 <select idref="uninstall_rsh" selected="true" />
 <select idref="service_rexec_disabled" selected="true" />
 <select idref="service_rsh_disabled" selected="true" />
 <select idref="service_rlogin_disabled" selected="true" />
 <select idref="no_rsh_trust_files" selected="true" />
-<select idref="uninstall_ypserv" selected="true" />
-<select idref="disable_ypbind" selected="true" />
+<select idref="package_ypserv_removed" selected="true" />
+<select idref="service_ypbind_disabled" selected="true" />
 <select idref="service_tftp_disabled" selected="true" />
 <select idref="uninstall_tftp" selected="true" />
 <select idref="tftpd_uses_secure_mode" selected="true" />
@@ -241,14 +241,14 @@ assurance."</description>
 <select idref="service_ntpdate_disabled" selected="true" />
 <select idref="service_portreserve_disabled" selected="true" />
 <select idref="service_qpidd_disabled" selected="true" />
-<select idref="service_rdisc_disabled" selected="true" />
+<!-- service_rdisc_disabled is already selected -->
 <select idref="service_rhnsd_disabled" selected="true" />
 <select idref="service_saslauthd_disabled" selected="true" />
 <select idref="sshd_allow_only_protocol2" selected="true" />
 
 <!-- AC-18(a) -->
 <select idref="wireless_disable_in_bios" selected="true" />
-<select idref="deactivate_wireless_interfaces" selected="true" />
+<select idref="wireless_disable_interfaces" selected="true" />
 <select idref="service_bluetooth_disabled" selected="true" />
 <select idref="kernel_module_bluetooth_disabled" selected="true" />
 
@@ -263,19 +263,19 @@ assurance."</description>
 <select idref="gconf_gnome_disable_automount" selected="true" />
 
 <!-- AU-1(b) -->
-<select idref="configure_auditd_num_logs" selected="true" />
-<select idref="configure_auditd_max_log_file" selected="true" />
-<select idref="configure_auditd_max_log_file_action" selected="true" />
+<select idref="auditd_data_retention_num_logs" selected="true" />
+<select idref="auditd_data_retention_max_log_file" selected="true" />
+<select idref="auditd_data_retention_max_log_file_action" selected="true" />
 <select idref="auditd_data_retention_space_left_action" selected="true" />
 <select idref="auditd_data_retention_admin_space_left_action" selected="true" />
 <select idref="auditd_data_retention_action_mail_acct" selected="true" />
-<select idref="configure_auditd_audispd" selected="true" />
+<select idref="auditd_audispd_syslog_plugin_activated" selected="true" />
 
 <!-- AU-3(1): THIS NEEDS FURTHER REVIEW ON ADDITIONAL
      AUDIT RECORD DETAILS -->
 
 <!-- AU-3(2) -->
-<select idref="rsyslog_send_messages_to_logserver" selected="true" />
+<select idref="rsyslog_remote_loghost" selected="true" />
 
 <!-- AU-8(1) -->
 <select idref="service_ntpd_enabled" selected="true" />
@@ -312,7 +312,7 @@ assurance."</description>
 <select idref="set_iptables_default_rule" selected="true" />
 <select idref="set_iptables_default_rule_forward" selected="true" />
 <select idref="sysctl_net_ipv4_conf_all_send_redirects" selected="true" />
-<select idref="sysctl_ipv4_ip_forward" selected="true" />
+<select idref="sysctl_net_ipv4_ip_forward" selected="true" />
 <select idref="sysctl_net_ipv4_conf_all_accept_source_route" selected="true" />
 <select idref="sysctl_net_ipv4_conf_all_accept_redirects" selected="true" />
 <select idref="sysctl_net_ipv4_icmp_echo_ignore_broadcasts" selected="true" />
@@ -324,7 +324,7 @@ assurance."</description>
 <select idref="kernel_module_hfsplus_disabled" selected="true" />
 <select idref="kernel_module_squashfs_disabled" selected="true" />
 <select idref="kernel_module_udf_disabled" selected="true" />
-<select idref="disable_gnome_thumbnailers" selected="true" />
+<select idref="gconf_gnome_disable_thumbnailers" selected="true" />
 <select idref="mount_option_nodev_nonroot_local_partitions" selected="true" />
 <select idref="mount_option_tmp_nodev" selected="true" />
 <select idref="mount_option_tmp_noexec" selected="true" />
@@ -336,13 +336,13 @@ assurance."</description>
 <select idref="service_cups_disabled" selected="true" />
 <select idref="cups_disable_browsing" selected="true" />
 <select idref="cups_disable_printserver" selected="true" />
-<select idref="disable_dhcp_server" selected="true" />
-<select idref="uninstall_dhcp_server" selected="true" />
-<select idref="disable_dhcp_client" selected="true" />
-<select idref="disable_avahi" selected="true" />
+<select idref="service_dhcpd_disabled" selected="true" />
+<select idref="package_dhcp_removed" selected="true" />
+<select idref="sysconfig_networking_bootproto_ifcfg" selected="true" />
+<select idref="service_avahi-daemon_disabled" selected="true" />
 <select idref="service_crond_enabled" selected="true" />
-<select idref="disable_dns_server" selected="true" />
-<select idref="uninstall_bind" selected="true" />
+<select idref="service_named_disabled" selected="true" />
+<select idref="package_bind_removed" selected="true" />
 <select idref="package_openldap-servers_removed" selected="true" />
 <select idref="package_sendmail_removed" selected="true" />
 <select idref="service_acpid_disabled" selected="true" />
@@ -355,15 +355,15 @@ assurance."</description>
 <select idref="service_irqbalance_enabled" selected="true" />
 <select idref="service_mdmonitor_disabled" selected="true" />
 <select idref="service_messagebus_disabled" selected="true" />
-<select idref="service_oddjobd_disabled" selected="true" />
+<!-- service_oddjobd_disabled is already selected -->
 <select idref="service_quota_nld_disabled" selected="true" />
 <select idref="service_rhsmcertd_disabled" selected="true" />
 <select idref="service_smartd_disabled" selected="true" />
 <select idref="service_sysstat_disabled" selected="true" />
-<select idref="disable_httpd" selected="true" />
+<select idref="service_httpd_disabled" selected="true" />
 <select idref="package_httpd_removed" selected="true" />
 <select idref="disabling_vsftpd" selected="true" />
-<select idref="uninstall_vsftpd" selected="true" />
+<select idref="package_vsftpd_removed" selected="true" />
 
 
 <!-- REMAINING MAPPINGS

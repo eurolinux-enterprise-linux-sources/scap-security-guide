@@ -1,0 +1,47 @@
+From 62120935c1ef2ab89e5fdcb75e604c264f5ce3b8 Mon Sep 17 00:00:00 2001
+From: Jan Lieskovsky <jlieskov@redhat.com>
+Date: Wed, 20 Jan 2016 02:18:03 +0100
+Subject: [PATCH] [BugFix] [Infrastructure] Fix behaviour of
+ 'perform_audit_rules_privileged_commands_remediation' helper remediation
+ function -- return match and skip the (SUID/SGID) binary only in the case
+ there has been previously processed (SUID/SGID) binary with the exact name
+ match (not just prefix match)
+
+The current behaviour is causing issue e.g. in the following scenario:
+* the 'ping6' binary has been processed,
+* the 'ping' binary is now processed,
+* since the prefix in the name matches, the current implementation
+  is considering 'ping' binary as being already dealt with, and
+  places it into the ignore list
+
+This patch fixes that behaviour.
+---
+ shared/remediations/bash/templates/remediation_functions | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/shared/remediations/bash/templates/remediation_functions b/shared/remediations/bash/templates/remediation_functions
+index e273d20..d43f278 100644
+--- a/shared/remediations/bash/templates/remediation_functions
++++ b/shared/remediations/bash/templates/remediation_functions
+@@ -533,7 +533,8 @@ do
+ 	# Replace possible slash '/' character in sbinary definition so we could use it in sed expressions below
+ 	sbinary_esc=${sbinary//$'/'/$'\/'}
+ 	# Check if this sbinary wasn't already handled in some of the previous iterations
+-	if [[ $(sed -ne "/$sbinary_esc/p" <<< ${sbinaries_to_skip[@]}) ]]
++	# Return match only if whole sbinary definition matched (not in the case just prefix matched!!!)
++	if [[ $(sed -ne "/${sbinary_esc}$/p" <<< ${sbinaries_to_skip[@]}) ]]
+ 	then
+ 		# If so, don't process it second time & go to process next sbinary
+ 		continue
+@@ -553,7 +554,7 @@ do
+ 		# * existing rule contains all arguments from expected rule form (though can contain
+ 		#   them in arbitrary order)
+ 	
+-		base_search=$(sed -e "/-a always,exit/!d" -e "/-F path=${sbinary_esc}/!d"   \
++		base_search=$(sed -e "/-a always,exit/!d" -e "/-F path=${sbinary_esc}$/!d"   \
+ 		    		  -e "/-F path=[^[:space:]]\+/!d" -e "/-F perm=.*/!d"       \
+ 				  -e "/-F auid>=${min_auid}/!d" -e "/-F auid!=4294967295/!d"  \
+ 				  -e "/-k privileged/!d" $afile)
+-- 
+2.4.3
+

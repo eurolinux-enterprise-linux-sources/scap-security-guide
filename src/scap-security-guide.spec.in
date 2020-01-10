@@ -3,107 +3,137 @@ Version:	__VERSION__
 Release:	__RELEASE__%{?dist}
 Summary:	Security guidance and baselines in SCAP formats
 Vendor:		scap-security-guide
-
-Group:		System Environment/Base
+Group:		Applications/System
 License:	Public Domain
 URL:		https://fedorahosted.org/scap-security-guide/
-
-Source0:	http://repos.ssgproject.org/sources/%{name}-%{version}.tar.gz
-
+Source0:	https://github.com/OpenSCAP/scap-security-guide/archive/%{name}-%{version}.tar.gz
 BuildArch:	noarch
 
 BuildRequires:	libxslt, expat, python, openscap-utils >= 1.0.3, python-lxml
+%if 0%{?fedora}
+BuildRequires:	openscap-utils >= 1.2.2
+BuildRequires:	ShellCheck
+%endif
 Requires:	xml-common, openscap-utils >= 1.0.8
+Provides:	openscap-content
 
-%if 0%{?rhel}
 %description
-The scap-security-guide project provides a guide for configuration of the
+The %{name} project provides a guide for configuration of the
 system from the final system's security point of view. The guidance is
 specified in the Security Content Automation Protocol (SCAP) format and
 constitutes a catalog of practical hardening advice, linked to government
 requirements where applicable. The project bridges the gap between generalized
-policy requirements and specific implementation guidelines. The Red Hat
-Enterprise Linux 6 system administrator can use the oscap command-line tool
-from the openscap-utils package to verify that the system conforms to provided
-guideline. Refer to scap-security-guide(8) manual page for further information.
-%endif
-%if 0%{?fedora}
-%description
-The scap-security-guide project provides a guide for configuration of the
-system from the final system's security point of view. The guidance is specified
-in the Security Content Automation Protocol (SCAP) format and constitutes
-a catalog of practical hardening advice, linked to government requirements
-where applicable. The project bridges the gap between generalized policy
-requirements and specific implementation guidelines. The Fedora system
-administrator can use the oscap CLI tool from openscap-utils package, or the
-scap-workbench GUI tool from scap-workbench package to verify that the system
-conforms to provided guideline. Refer to scap-security-guide(8) manual page for
-further information.
-%endif
+policy requirements and specific implementation guidelines. The system
+administrator can use the oscap command-line tool from the openscap-utils
+package to verify that the system conforms to provided guidelines.
+
+%package	doc
+Summary:	HTML formatted documents containing security guides generated from XCCDF benchmarks.
+Group:		System Environment/Base
+Requires:	%{name} = %{version}-%{release}
+
+%description	doc
+The %{name}-doc package contains HTML formatted documents containing
+hardening guidances that have been generated from XCCDF benchmarks
+present in %{name} package.
 
 %prep
-
-%if 0%{?rhel}
 %setup -q -n %{name}-%{version}
-%endif
-%if 0%{?fedora}
-%setup -q -D -n %{name}-%{version}
-%endif
 
 %build
-%if 0%{?fedora}
-(cd Fedora && make dist)
-%endif
+#(cd RHEL/5 && make dist)
 (cd RHEL/6 && make dist)
 (cd RHEL/7 && make dist)
+(cd JRE && make dist)
+(cd Firefox && make dist)
+# JBossEAP5 has a different build system
+#(cd JBossEAP5 && make dist)
+
+%if 0%{?fedora}
+(cd Fedora && make dist)
+(cd Chromium && make dist)
+#(cd Webmin && make dist)
+%endif
 
 %install
 mkdir -p %{buildroot}%{_mandir}/en/man8/
-%if 0%{?rhel}
-mkdir -p %{buildroot}%{_datadir}/xml/scap/ssg/content
-mkdir -p %{buildroot}%{_datadir}/%{name}
+cp -a docs/scap-security-guide.8 %{buildroot}%{_mandir}/en/man8/
 
-# Add in core content (SCAP)
+mkdir -p %{buildroot}%{_datadir}/%{name}
+mkdir -p %{buildroot}%{_datadir}/xml/scap/ssg/content
+
+#cp -a RHEL/5/dist/content/* %{buildroot}%{_datadir}/xml/scap/ssg/content/
 cp -a RHEL/6/dist/content/* %{buildroot}%{_datadir}/xml/scap/ssg/content/
 cp -a RHEL/7/dist/content/* %{buildroot}%{_datadir}/xml/scap/ssg/content/
+cp -a JRE/dist/content/* %{buildroot}%{_datadir}/xml/scap/ssg/content/
+cp -a Firefox/dist/content/* %{buildroot}%{_datadir}/xml/scap/ssg/content/
+
+# Add in functions library for remediations
+cp -a shared/remediations/bash/templates/remediation_functions %{buildroot}%{_datadir}/%{name}/
+
+%if 0%{?fedora}
+cp -a Fedora/dist/content/* %{buildroot}%{_datadir}/xml/scap/ssg/content
+cp -a Chromium/dist/content/ssg-chromium-ds.xml %{buildroot}%{_datadir}/xml/scap/ssg/content
+#cp -a Webmin/dist/content/* %{buildroot}%{_datadir}/xml/scap/ssg/content
+
+# We only want datastreams on Fedora, lets get rid of plain XCCDF, OVAL and CPE dict files
+rm %{buildroot}%{_datadir}/xml/scap/ssg/content/*-xccdf.xml
+rm %{buildroot}%{_datadir}/xml/scap/ssg/content/*-oval.xml
+rm %{buildroot}%{_datadir}/xml/scap/ssg/content/*-cpe-dictionary.xml
+%endif
+
+# We do this after the filtering on Fedora because we don't ship JBossEAP5 datastreams
 cp -a JBossEAP5/eap5-* %{buildroot}%{_datadir}/xml/scap/ssg/content/
 
-# Add in RHEL-6 functions library for remediations
-cp -a RHEL/6/input/fixes/bash/templates/functions %{buildroot}%{_datadir}/%{name}/functions
+# Docs
+mkdir -p %{buildroot}/%{_docdir}/%{name}/guides
+cp -a RHEL/6/output/*-guide-*.html %{buildroot}/%{_docdir}/%{name}/guides
+cp -a RHEL/7/output/*-guide-*.html %{buildroot}/%{_docdir}/%{name}/guides
+cp -a Firefox/output/*-guide-*.html %{buildroot}/%{_docdir}/%{name}/guides
+cp -a JRE/output/*-guide-*.html %{buildroot}/%{_docdir}/%{name}/guides
+# outside of the normal build system, different guide
+cp -a JBossEAP5/docs/JBossEAP5_Guide.html %{buildroot}/%{_docdir}/%{name}/guides
 
-# Add in manpage
-cp -a RHEL/6/input/auxiliary/scap-security-guide.8 %{buildroot}%{_mandir}/en/man8/scap-security-guide.8
-%endif
 %if 0%{?fedora}
-mkdir -p %{buildroot}%{_datadir}/xml/scap/ssg/{fedora,rhel{6,7}}
-mkdir -p %{buildroot}%{_mandir}/en/man8/
-
-# Add in core Fedora content (SCAP XCCDF and OVAL)
-cp -a Fedora/dist/content/* %{buildroot}%{_datadir}/xml/scap/ssg/fedora
-# Add in Fedora manpage
-cp -a Fedora/input/auxiliary/scap-security-guide.8 %{buildroot}%{_mandir}/en/man8/scap-security-guide.8
-
-# Add in datastream form of RHEL-6 benchmark
-cp -a RHEL/6/dist/content/ssg-rhel6-ds.xml %{buildroot}%{_datadir}/xml/scap/ssg/rhel6
-# Add in datastream form of RHEL-7 benchmark
-cp -a RHEL/7/dist/content/ssg-rhel7-ds.xml %{buildroot}%{_datadir}/xml/scap/ssg/rhel7
+cp -a Fedora/output/*-guide-*.html %{buildroot}/%{_docdir}/%{name}/guides
+cp -a Chromium/output/*-guide-*.html %{buildroot}/%{_docdir}/%{name}/guides
+#cp -a Webmin/output/*-guide-*.html %{buildroot}/%{_defaultdocdir}/%{name}/guides
 %endif
 
 %files
 %{_datadir}/xml/scap
-%if 0%{?rhel}
-%{_datadir}/%{name}/functions
-%lang(en) %{_mandir}/en/man8/scap-security-guide.8.gz
-%doc Contributors.md README.md BUILD.md RHEL/6/LICENSE RHEL/6/output/rhel6-guide.html RHEL/6/output/table-rhel6-cces.html RHEL/6/output/table-rhel6-nistrefs-common.html RHEL/6/output/table-rhel6-nistrefs.html RHEL/6/output/table-rhel6-srgmap-flat.html RHEL/6/output/table-rhel6-srgmap-flat.xhtml RHEL/6/output/table-rhel6-srgmap.html RHEL/6/output/table-rhel6-stig.html RHEL/6/input/auxiliary/DISCLAIMER JBossEAP5/docs/JBossEAP5_Guide.html
-%endif
-%if 0%{?fedora}
+%{_datadir}/%{name}
 %lang(en) %{_mandir}/en/man8/scap-security-guide.8.*
-%doc Contributors.md README.md BUILD.md Fedora/LICENSE Fedora/output/ssg-fedora*guide.html
-%endif
+%doc LICENSE
+%doc README.md
+
+%files doc
+%doc %{_docdir}/%{name}/guides/*.html
 
 %changelog
 * __DATE__ __REL_MANAGER__ <__REL_MANAGER_MAIL__> __VERSION__-__RELEASE__
 - Make new __VERSION__ release
+
+* Tue Jan 19 2016 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.28-1
+- Make new 0.1.28 upstream release
+
+* Fri Dec 11 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.27-1
+- Make new 0.1.27 upstream release
+
+* Mon Oct 19 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.26-1
+- Make new 0.1.26 upstream release
+
+* Wed Aug 19 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.25-1
+- Make new 0.1.25 upstream release
+
+* Tue Jul 07 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.24-1
+- Make new 0.1.24 release
+
+* Mon Jun 22 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.23-1
+- Make new 0.1.23 release
+
+* Mon May 04 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.22-1
+- Make new 0.1.22 release
 
 * Fri Feb 20 2015 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.21-1
 - Make new 0.1.21 release

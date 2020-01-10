@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 #
 # create_services_enabled.py
@@ -45,6 +45,11 @@ def main():
         # put the CSV line's items into a list
         servicelines = csv.reader(csv_file)
         for line in servicelines:
+
+            # Skip lines of input file starting with comment '#' character
+            if line[0].startswith('#'):
+                continue
+
             output_checkfile(line)
 
     sys.exit(0)

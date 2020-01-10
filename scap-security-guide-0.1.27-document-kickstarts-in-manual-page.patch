@@ -1,0 +1,20 @@
+--- scap-security-guide-0.1.27/docs/scap-security-guide.8.orig	2015-12-15 10:41:57.712002572 -0500
++++ scap-security-guide-0.1.27/docs/scap-security-guide.8	2015-12-15 10:42:42.162998921 -0500
+@@ -59,6 +59,17 @@ agencies on what should be done to impro
+ configuration settings focusing primarily on security.
+ 
+ .B "NOTE: "
++The following SCAP Security Guide kickstart files can be used to install a
++Red Hat Enterprise Linux 6 Server system that will be right after the
++completion of the installation compliant with the selected profile:
++
++.I /usr/share/scap-security-guide/kickstart/ssg-rhel6-pci-dss-with-gui-ks.cfg
++
++.I /usr/share/scap-security-guide/kickstart/ssg-rhel6-stig-ks.cfg
++
++.I /usr/share/scap-security-guide/kickstart/ssg-rhel6-usgcb-server-with-gui-ks.cfg
++
++.B "NOTE: "
+ While the current content maps to USGCB requirements, it has NOT
+ been validated by NIST as of yet. This content should be considered
+ draft, we are highly interested in feedback.

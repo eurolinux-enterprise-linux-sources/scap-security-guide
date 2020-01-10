@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 #
 # create_umask_checks.py
@@ -81,8 +81,11 @@ def main():
         with open(sys.argv[1], 'r') as csv_file:
             file_lines = csv.reader(csv_file)
             for line in file_lines:
+
+                # Skip lines of input file starting with comment '#' character
                 if line[0].startswith('#'):
                     continue
+
                 output_check(line)
 
         # done
