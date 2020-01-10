@@ -2,7 +2,7 @@
 
 Name:		scap-security-guide
 Version:	0.1.%{redhatssgversion}
-Release:	2%{?dist}
+Release:	3%{?dist}
 Summary:	Security guidance and baselines in SCAP formats
 
 Group:		System Environment/Base
@@ -17,6 +17,7 @@ Patch4:		scap-security-guide-0.1.28-downstream-rhel6-audit-rules-privileged-comm
 Patch5:		scap-security-guide-0.1.28-backport-update-pci-dss-url.patch
 Patch6:		scap-security-guide-0.1.28-rhel6-update-title-of-cnss-profile.patch
 Patch7:		scap-security-guide-0.1.28-downstream-drop-install-hids-from-pci-dss.patch
+Patch8:		scap-security-guide-0.1.28-rhel6-rhel7-add-computenode-cpe.patch
 BuildArch:	noarch
 
 BuildRequires:	libxslt, expat, python, openscap-scanner >= 1.0.10-2, python-lxml
@@ -52,6 +53,7 @@ been generated from XCCDF benchmarks present in %{name} package.
 %patch5 -p5 -b .update_pci_dss_url
 %patch6 -p1 -b .rhel6_update_cnss_profile_title
 %patch7 -p1 -b .drop_install_hids_rule_from_pci_dss
+%patch8 -p1 -b .rhel6_rhel7_add_computenode_cpe
 
 %build
 (cd RHEL/6 && make dist)
@@ -110,6 +112,9 @@ rm -rf %{buildroot}
 %doc RHEL/6/output/ssg-rhel6-guide-*.html RHEL/7/output/ssg-rhel7-guide-*.html JRE/output/ssg-jre-guide-*.html Firefox/output/ssg-firefox-guide-*.html
 
 %changelog
+* Mon Nov 07 2016 Watson Sato <wsato@redhat.com> 0.1.28-3
+- Add ComputeNode CPE for RHEL 6 and 7 (RH BZ#1311054)
+
 * Thu Feb 04 2016 Jan iankko Lieskovsky <jlieskov@redhat.com> 0.1.28-2
 - Update URL to PCI DSS standard (latest version is v3.1 from April 2015)
 - Enhance title of CNSS No.1253 profile for Red Hat Enterprise Linux 6
