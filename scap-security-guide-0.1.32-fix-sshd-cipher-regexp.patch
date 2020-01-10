@@ -1,0 +1,27 @@
+From 7bb9127f62df9154b5b7638fa8d4c8f714431f29 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Jan=20=C4=8Cern=C3=BD?= <jcerny@redhat.com>
+Date: Mon, 27 Mar 2017 12:17:04 +0200
+Subject: [PATCH] RHBZ #1413494: Fix the regular expression for SSHD Ciphers
+
+The rule allowed only exact list of the ciphers, in a required order.
+If user removes some of the ciphers from /etc/ssh/sshd_config.
+the configuration still fulfills the requirement,
+but a fail was reported, because the regular expression required
+all of them listed.
+---
+ shared/oval/sshd_use_approved_ciphers.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/shared/oval/sshd_use_approved_ciphers.xml b/shared/oval/sshd_use_approved_ciphers.xml
+index 93272c9278..ca7e400ff2 100644
+--- a/shared/oval/sshd_use_approved_ciphers.xml
++++ b/shared/oval/sshd_use_approved_ciphers.xml
+@@ -26,7 +26,7 @@
+   </ind:textfilecontent54_test>
+   <ind:textfilecontent54_object id="obj_sshd_use_approved_ciphers" version="2">
+     <ind:filepath>/etc/ssh/sshd_config</ind:filepath>
+-    <ind:pattern operation="pattern match">^[\s]*(?i)Ciphers(?-i)[\s]+aes128-ctr,aes192-ctr,aes256-ctr,aes128-cbc,3des-cbc,aes192-cbc,aes256-cbc[\s]*(?:|(?:#.*))?$</ind:pattern>
++    <ind:pattern operation="pattern match">^[\s]*(?i)Ciphers(?-i)[\s]+((aes128-ctr|aes192-ctr|aes256-ctr|aes128-cbc|3des-cbc|aes192-cbc|aes256-cbc),?)+[\s]*(?:|(?:#.*))?$</ind:pattern>
+     <ind:instance datatype="int">1</ind:instance>
+   </ind:textfilecontent54_object>
+ </def-group>

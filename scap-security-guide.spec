@@ -2,7 +2,7 @@
 
 Name:		scap-security-guide
 Version:	0.1.%{redhatssgversion}
-Release:	3%{?dist}
+Release:	4%{?dist}
 Summary:	Security guidance and baselines in SCAP formats
 
 Group:		System Environment/Base
@@ -18,6 +18,7 @@ Patch5:		scap-security-guide-0.1.28-backport-update-pci-dss-url.patch
 Patch6:		scap-security-guide-0.1.28-rhel6-update-title-of-cnss-profile.patch
 Patch7:		scap-security-guide-0.1.28-downstream-drop-install-hids-from-pci-dss.patch
 Patch8:		scap-security-guide-0.1.28-rhel6-rhel7-add-computenode-cpe.patch
+Patch9:		scap-security-guide-0.1.32-fix-sshd-cipher-regexp.patch
 BuildArch:	noarch
 
 BuildRequires:	libxslt, expat, python, openscap-scanner >= 1.0.10-2, python-lxml
@@ -54,6 +55,7 @@ been generated from XCCDF benchmarks present in %{name} package.
 %patch6 -p1 -b .rhel6_update_cnss_profile_title
 %patch7 -p1 -b .drop_install_hids_rule_from_pci_dss
 %patch8 -p1 -b .rhel6_rhel7_add_computenode_cpe
+%patch9 -p1 -b .fix_sshd_cipher_regexp
 
 %build
 (cd RHEL/6 && make dist)
@@ -112,6 +114,9 @@ rm -rf %{buildroot}
 %doc RHEL/6/output/ssg-rhel6-guide-*.html RHEL/7/output/ssg-rhel7-guide-*.html JRE/output/ssg-jre-guide-*.html Firefox/output/ssg-firefox-guide-*.html
 
 %changelog
+* Mon Feb 26 2018 Matěj Týč <matyc@redhat.com> - 0.1.28-4
+- Added the SSH allowed ciphers patch (RH BZ#1467784)
+
 * Mon Nov 07 2016 Watson Sato <wsato@redhat.com> 0.1.28-3
 - Add ComputeNode CPE for RHEL 6 and 7 (RH BZ#1311054)
 
